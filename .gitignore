@@ -20,9 +20,9 @@ venv/
 *.swp
 *.swo
 
-# Backups (keep locally, not in git)
-# Uncomment if you don't want backups in git:
-# backups/
+# Backups and runtime data (keep locally, not in git)
+backups/
+.study_history.json
 
 # Temp files
 *.tmp
