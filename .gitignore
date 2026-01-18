@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.so
+.env
+venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Personal notes (if you want to keep some things private)
+# personal_notes.md

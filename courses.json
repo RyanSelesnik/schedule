@@ -1,0 +1,273 @@
+{
+  "student": {
+    "preferences": {
+      "study_times": ["mornings", "afternoons", "evenings"],
+      "hours_per_day": "2-3",
+      "style": "one_subject_per_day"
+    }
+  },
+  "courses": [
+    {
+      "code": "ELEC70028",
+      "name": "Predictive Control",
+      "lecturer": null,
+      "schedule": {
+        "lectures": [
+          {"day": "Monday", "time": "16:00-17:00"},
+          {"day": "Thursday", "time": "15:00-16:00"}
+        ],
+        "labs": {
+          "options": [
+            {"day": "Monday", "time": "09:00-11:00"},
+            {"day": "Friday", "time": "09:00-11:00"}
+          ],
+          "selected": null
+        }
+      },
+      "assessment": {
+        "type": "100% Coursework",
+        "components": [
+          {
+            "name": "Basic Part 1",
+            "weight": null,
+            "deadline": "2026-01-16T23:00:00",
+            "description": "ODEs, Numerical Integration/Quadrature, Systems of Linear Equations, Nonlinear optimization using fmincon",
+            "submissions_allowed": 5,
+            "grading": "first_submission_counts",
+            "status": "pending"
+          },
+          {
+            "name": "Basic Part 2",
+            "weight": null,
+            "deadline": "2026-01-30T23:00:00",
+            "description": "Gantry Crane Model, LQ-RHC without constraints, LQ-RHC with constraints, Nonlinear OCP (not graded)",
+            "submissions_allowed": 5,
+            "grading": "first_submission_counts",
+            "status": "pending"
+          },
+          {
+            "name": "Core Part 1",
+            "weight": null,
+            "deadline": "2026-02-06T23:00:00",
+            "description": "Core assignment with report via TurnitIn",
+            "submissions_allowed": 20,
+            "grading": "last_submission_counts",
+            "status": "pending"
+          },
+          {
+            "name": "Core Part 2",
+            "weight": null,
+            "deadline": "2026-03-13T23:00:00",
+            "description": "Core assignment with report via TurnitIn",
+            "submissions_allowed": 20,
+            "grading": "last_submission_counts",
+            "status": "pending"
+          },
+          {
+            "name": "Oral Examination",
+            "weight": null,
+            "deadline": "2026-03-16 to 2026-03-20",
+            "description": "In-person oral examination. Do not book travel during this period.",
+            "status": "pending"
+          }
+        ],
+        "notes": [
+          "All deadlines at 23:00",
+          "Submit early on Grader for feedback",
+          "Test and debug code before submitting",
+          "Basic: first submission counts, 5 attempts",
+          "Core: last submission counts, 20 attempts"
+        ]
+      },
+      "topics": [
+        "ODEs",
+        "Numerical Integration/Quadrature",
+        "Systems of Linear Equations",
+        "Nonlinear optimization (fmincon)",
+        "Gantry Crane Model",
+        "LQ-RHC without constraints",
+        "LQ-RHC with constraints",
+        "Nonlinear OCP"
+      ]
+    },
+    {
+      "code": "ELEC70082",
+      "name": "Distributed Optimisation and Learning",
+      "lecturer": {
+        "name": "Dr Stefan Vlaski",
+        "email": "s.vlaski@imperial.ac.uk",
+        "office": "EEE 810"
+      },
+      "schedule": {
+        "lectures": [{"day": "Thursday", "time": "09:00-11:00", "location": "EEE 508"}],
+        "classes": [{"day": "Tuesday", "time": "11:00-12:00", "location": "EEE 508"}]
+      },
+      "assessment": {
+        "type": "Mixed",
+        "components": [
+          {
+            "name": "Problem Set 1",
+            "weight": "5%",
+            "deadline": "2026-01-29T16:00:00",
+            "description": "Inference and optimisation",
+            "grading": "pass/fail",
+            "status": "pending"
+          },
+          {
+            "name": "Problem Set 2",
+            "weight": "5%",
+            "deadline": "2026-02-12T16:00:00",
+            "description": "Distributed learning with a fusion center",
+            "grading": "pass/fail",
+            "status": "pending"
+          },
+          {
+            "name": "Problem Set 3",
+            "weight": "5%",
+            "deadline": "2026-02-26T16:00:00",
+            "description": "Graphs",
+            "grading": "pass/fail",
+            "status": "pending"
+          },
+          {
+            "name": "Problem Set 4",
+            "weight": "5%",
+            "deadline": "2026-03-12T16:00:00",
+            "description": "Decentralised learning",
+            "grading": "pass/fail",
+            "status": "pending"
+          },
+          {
+            "name": "Paper Study",
+            "weight": "20%",
+            "deadline": "2026-03-26T16:00:00",
+            "description": "2-page report on a recent paper: identify key contribution, limitation, reproduce numerical results",
+            "status": "pending"
+          },
+          {
+            "name": "Mid-term Exam",
+            "weight": "30%",
+            "deadline": "2026-02-17",
+            "description": "Covers Parts I and II (Inference/Learning, Deterministic/Stochastic optimisation, Parallel/Distributed GD, Federated learning)",
+            "status": "pending"
+          },
+          {
+            "name": "Final Exam",
+            "weight": "30%",
+            "deadline": "TBD",
+            "description": "Covers all material",
+            "status": "pending"
+          }
+        ],
+        "notes": [
+          "All coursework deadlines at 16:00",
+          "Submission via Blackboard"
+        ]
+      },
+      "topics": {
+        "part1_foundations": ["Inference and learning", "Deterministic and stochastic optimisation"],
+        "part2_fusion_center": ["Parallel and distributed gradient descent", "Federated learning"],
+        "part3_decentralized": ["Graph theory", "Averaging over graphs", "Primal optimisation algorithms", "Primal-dual optimisation algorithms"],
+        "part4_advanced": ["Reinforcement learning", "Asynchrony", "Privacy", "Multitask learning"]
+      }
+    },
+    {
+      "code": "ELEC70073",
+      "name": "Computer Vision and Pattern Recognition",
+      "lecturer": null,
+      "schedule": {
+        "lectures": [{"day": "Friday", "time": "14:00-16:00", "location": "406/407"}]
+      },
+      "assessment": {
+        "type": "Coursework + Test",
+        "components": [
+          {
+            "name": "Pattern Recognition Coursework",
+            "weight": null,
+            "deadline": "2026-02-12T16:00:00",
+            "description": "Coursework done in pairs, covers first 5 weeks",
+            "status": "pending"
+          },
+          {
+            "name": "Computer Vision Coursework",
+            "weight": null,
+            "deadline": "2026-03-18T16:00:00",
+            "description": "Coursework done in pairs, covers last 5 weeks",
+            "status": "pending"
+          },
+          {
+            "name": "Wiseflow Test",
+            "weight": null,
+            "deadline": "2026-03-13T14:00:00",
+            "description": "Closed book, in-person test",
+            "status": "pending"
+          }
+        ],
+        "notes": [
+          "5 weeks Pattern Recognition, 5 weeks Computer Vision",
+          "Coursework done in pairs"
+        ]
+      },
+      "topics": {
+        "pattern_recognition": ["Weeks 1-5"],
+        "computer_vision": ["Weeks 6-10"]
+      }
+    },
+    {
+      "code": "ELEC70066",
+      "name": "Applied Advanced Optimisation",
+      "lecturer": null,
+      "schedule": {
+        "lectures": [{"day": "Friday", "time": "11:00-13:00"}]
+      },
+      "assessment": {
+        "type": "Mixed",
+        "components": [
+          {
+            "name": "iRAT",
+            "weight": "5%",
+            "deadline": "In-class",
+            "description": "Individual multiple-choice test on video lectures, closed book, in class",
+            "status": "ongoing"
+          },
+          {
+            "name": "tRAT",
+            "weight": "20%",
+            "deadline": "In-class",
+            "description": "Team test, one solution per team, last 30 minutes of class",
+            "status": "ongoing"
+          },
+          {
+            "name": "Peer Assessment",
+            "weight": "10%",
+            "deadline": "TBD",
+            "description": "Peer assessment component",
+            "status": "pending"
+          },
+          {
+            "name": "Final Exam",
+            "weight": "65%",
+            "deadline": "TBD",
+            "description": "3 hours, 3 questions",
+            "status": "pending"
+          }
+        ],
+        "notes": [
+          "Flipped classroom format",
+          "Watch video lectures at home before class",
+          "In class: iRAT -> Group Problems (ungraded) -> Discussion -> tRAT",
+          "iRAT and tRAT designed to incentivize participation with easy marks"
+        ]
+      },
+      "format": {
+        "pre_class": "Watch video lectures at home",
+        "in_class": [
+          "Individual test (iRAT) - multiple choice on video content",
+          "Group problems - collaborative, not marked",
+          "Class discussion of solutions (~1 hour)",
+          "Team test (tRAT) - last 30 minutes, marked"
+        ]
+      }
+    }
+  ]
+}

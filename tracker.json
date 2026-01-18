@@ -1,0 +1,196 @@
+{
+  "last_updated": "2026-01-18",
+  "courses": {
+    "ELEC70028": {
+      "name": "Predictive Control",
+      "assessments": {
+        "basic_part_1": {
+          "name": "Basic Part 1",
+          "deadline": "2026-01-16",
+          "status": "overdue",
+          "submissions_used": 0,
+          "submissions_allowed": 5,
+          "score": null,
+          "notes": "Check if submitted!"
+        },
+        "basic_part_2": {
+          "name": "Basic Part 2",
+          "deadline": "2026-01-30",
+          "status": "in_progress",
+          "submissions_used": 0,
+          "submissions_allowed": 5,
+          "score": null,
+          "notes": ""
+        },
+        "core_part_1": {
+          "name": "Core Part 1",
+          "deadline": "2026-02-06",
+          "status": "not_started",
+          "submissions_used": 0,
+          "submissions_allowed": 20,
+          "score": null,
+          "notes": ""
+        },
+        "core_part_2": {
+          "name": "Core Part 2",
+          "deadline": "2026-03-13",
+          "status": "not_started",
+          "submissions_used": 0,
+          "submissions_allowed": 20,
+          "score": null,
+          "notes": ""
+        },
+        "oral_exam": {
+          "name": "Oral Examination",
+          "deadline": "2026-03-16 to 2026-03-20",
+          "status": "not_started",
+          "score": null,
+          "notes": "Do NOT book travel during this period"
+        }
+      },
+      "lectures_attended": [],
+      "topics_reviewed": []
+    },
+    "ELEC70082": {
+      "name": "Distributed Optimisation and Learning",
+      "assessments": {
+        "ps1": {
+          "name": "Problem Set 1",
+          "deadline": "2026-01-29",
+          "status": "in_progress",
+          "weight": "5%",
+          "score": null,
+          "notes": "Inference and optimisation"
+        },
+        "ps2": {
+          "name": "Problem Set 2",
+          "deadline": "2026-02-12",
+          "status": "not_started",
+          "weight": "5%",
+          "score": null,
+          "notes": "Distributed learning with fusion center"
+        },
+        "midterm": {
+          "name": "Mid-term Exam",
+          "deadline": "2026-02-17",
+          "status": "not_started",
+          "weight": "30%",
+          "score": null,
+          "notes": "Covers Parts I and II"
+        },
+        "ps3": {
+          "name": "Problem Set 3",
+          "deadline": "2026-02-26",
+          "status": "not_started",
+          "weight": "5%",
+          "score": null,
+          "notes": "Graphs"
+        },
+        "ps4": {
+          "name": "Problem Set 4",
+          "deadline": "2026-03-12",
+          "status": "not_started",
+          "weight": "5%",
+          "score": null,
+          "notes": "Decentralised learning"
+        },
+        "paper_study": {
+          "name": "Paper Study",
+          "deadline": "2026-03-26",
+          "status": "not_started",
+          "weight": "20%",
+          "score": null,
+          "paper_chosen": null,
+          "notes": "2-page report"
+        },
+        "final_exam": {
+          "name": "Final Exam",
+          "deadline": "TBD",
+          "status": "not_started",
+          "weight": "30%",
+          "score": null,
+          "notes": "Covers all material"
+        }
+      },
+      "lectures_attended": [],
+      "topics_reviewed": []
+    },
+    "ELEC70073": {
+      "name": "Computer Vision and Pattern Recognition",
+      "assessments": {
+        "pr_coursework": {
+          "name": "Pattern Recognition Coursework",
+          "deadline": "2026-02-12",
+          "status": "not_started",
+          "partner": null,
+          "score": null,
+          "notes": "Find partner ASAP"
+        },
+        "cv_coursework": {
+          "name": "Computer Vision Coursework",
+          "deadline": "2026-03-18",
+          "status": "not_started",
+          "partner": null,
+          "score": null,
+          "notes": ""
+        },
+        "wiseflow_test": {
+          "name": "Wiseflow Test",
+          "deadline": "2026-03-13",
+          "status": "not_started",
+          "score": null,
+          "notes": "Closed book, in-person"
+        }
+      },
+      "lectures_attended": [],
+      "topics_reviewed": []
+    },
+    "ELEC70066": {
+      "name": "Applied Advanced Optimisation",
+      "assessments": {
+        "irat": {
+          "name": "iRAT (weekly)",
+          "deadline": "ongoing",
+          "status": "ongoing",
+          "weight": "5%",
+          "scores": [],
+          "notes": "Individual test each week"
+        },
+        "trat": {
+          "name": "tRAT (weekly)",
+          "deadline": "ongoing",
+          "status": "ongoing",
+          "weight": "20%",
+          "scores": [],
+          "notes": "Team test each week"
+        },
+        "peer_assessment": {
+          "name": "Peer Assessment",
+          "deadline": "TBD",
+          "status": "not_started",
+          "weight": "10%",
+          "score": null,
+          "notes": ""
+        },
+        "final_exam": {
+          "name": "Final Exam",
+          "deadline": "TBD",
+          "status": "not_started",
+          "weight": "65%",
+          "score": null,
+          "notes": "3 hours, 3 questions"
+        }
+      },
+      "videos_watched": [],
+      "lectures_attended": []
+    }
+  },
+  "weekly_log": {
+    "2026-W03": {
+      "week_of": "2026-01-19",
+      "study_hours": 0,
+      "completed_tasks": [],
+      "notes": ""
+    }
+  }
+}
