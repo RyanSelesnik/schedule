@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-01-18 14:33:09",
+  "last_updated": "2026-01-18",
   "courses": {
     "ELEC70028": {
       "name": "Predictive Control",
@@ -7,7 +7,7 @@
         "basic_part_1": {
           "name": "Basic Part 1",
           "deadline": "2026-01-16",
-          "status": "submitted",
+          "status": "overdue",
           "submissions_used": 0,
           "submissions_allowed": 5,
           "score": null,

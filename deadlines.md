@@ -1,88 +1,76 @@
 # Assessment Deadlines Overview
 
-**Today: 18 January 2026**
+**Generated:** 2026-01-18 14:33
 
-## Upcoming Deadlines (Chronological)
+> This file is auto-generated from tracker.json. Do not edit manually.
+> Run `study generate` to regenerate.
+
+## Upcoming Deadlines
 
 ### January 2026
-| Date | Time | Course | Assessment | Status |
-|------|------|--------|------------|--------|
-| ~~16 Jan~~ | ~~23:00~~ | ~~Predictive Control~~ | ~~Basic Part 1~~ | **PASSED** |
-| 29 Jan | 16:00 | Distributed Optimisation | Problem Set 1 (5%) | Due in 11 days |
-| 30 Jan | 23:00 | Predictive Control | Basic Part 2 | Due in 12 days |
 
+| Date | Time | Course | Assessment | Weight | Status |
+|------|------|--------|------------|--------|--------|
+| 16 Jan | - | [pc] Predictive Control | Basic Part 1 | - | 📤 Submitted |
+| 29 Jan | - | [do] Distributed Optimisa | Problem Set 1 | 5% | 🔄 In progress |
+| 30 Jan | - | [pc] Predictive Control | Basic Part 2 | - | 🔄 In progress |
 ### February 2026
-| Date | Time | Course | Assessment | Status |
-|------|------|--------|------------|--------|
-| 6 Feb | 23:00 | Predictive Control | Core Part 1 | Due in 19 days |
-| 12 Feb | 16:00 | Distributed Optimisation | Problem Set 2 (5%) | Due in 25 days |
-| 12 Feb | 16:00 | Computer Vision | PR Coursework | Due in 25 days |
-| 17 Feb | TBD | Distributed Optimisation | **Mid-term Exam (30%)** | Due in 30 days |
-| 26 Feb | 16:00 | Distributed Optimisation | Problem Set 3 (5%) | Due in 39 days |
 
+| Date | Time | Course | Assessment | Weight | Status |
+|------|------|--------|------------|--------|--------|
+| 06 Feb | - | [pc] Predictive Control | Core Part 1 | - | ⬜ Not started |
+| 12 Feb | - | [do] Distributed Optimisa | Problem Set 2 | 5% | ⬜ Not started |
+| 12 Feb | - | [cv] Computer Vision and  | Pattern Recognition Coursework | - | ⬜ Not started |
+| 17 Feb | - | [do] Distributed Optimisa | Mid-term Exam | 30% | ⬜ Not started |
+| 26 Feb | - | [do] Distributed Optimisa | Problem Set 3 | 5% | ⬜ Not started |
 ### March 2026
-| Date | Time | Course | Assessment | Status |
-|------|------|--------|------------|--------|
-| 12 Mar | 16:00 | Distributed Optimisation | Problem Set 4 (5%) | |
-| 13 Mar | 23:00 | Predictive Control | Core Part 2 | |
-| 13 Mar | 14:00 | Computer Vision | **Wiseflow Test** | |
-| 16-20 Mar | TBD | Predictive Control | **Oral Examination** | |
-| 18 Mar | 16:00 | Computer Vision | CV Coursework | |
-| 26 Mar | 16:00 | Distributed Optimisation | Paper Study (20%) | |
 
-### TBD
-- Applied Advanced Optimisation - **Final Exam (65%)** - 3 hours, 3 questions
-- Distributed Optimisation - **Final Exam (30%)**
+| Date | Time | Course | Assessment | Weight | Status |
+|------|------|--------|------------|--------|--------|
+| 12 Mar | - | [do] Distributed Optimisa | Problem Set 4 | 5% | ⬜ Not started |
+| 13 Mar | - | [pc] Predictive Control | Core Part 2 | - | ⬜ Not started |
+| 13 Mar | - | [cv] Computer Vision and  | Wiseflow Test | - | ⬜ Not started |
+| 16 Mar | - | [pc] Predictive Control | Oral Examination | - | ⬜ Not started |
+| 18 Mar | - | [cv] Computer Vision and  | Computer Vision Coursework | - | ⬜ Not started |
+| 26 Mar | - | [do] Distributed Optimisa | Paper Study | 20% | ⬜ Not started |
 
----
+## Summary by Course
 
-## Priority Focus by Week
+### [pc] Predictive Control
 
-### Week of 20-26 Jan
-- **HIGH**: Distributed Optimisation PS1 (due 29 Jan)
-- **HIGH**: Predictive Control Basic Part 2 (due 30 Jan)
-- Watch Applied Adv. Optimisation videos before Friday class
+- 📤 **Basic Part 1** — 2026-01-16
+- 🔄 **Basic Part 2** — 2026-01-30
+- ⬜ **Core Part 1** — 2026-02-06
+- ⬜ **Core Part 2** — 2026-03-13
+- ⬜ **Oral Examination** — 2026-03-16 to 2026-03-20
 
-### Week of 27 Jan - 2 Feb
-- **CRITICAL**: Submit PS1 by 29 Jan
-- **CRITICAL**: Submit Basic Part 2 by 30 Jan
-- Start Predictive Control Core Part 1
+Progress: 1/5 completed
 
-### Week of 3-9 Feb
-- **HIGH**: Predictive Control Core Part 1 (due 6 Feb)
-- Start Distributed Optimisation PS2
-- Start Pattern Recognition coursework
+### [do] Distributed Optimisation and Learning
 
-### Week of 10-16 Feb
-- **HIGH**: Distributed Optimisation PS2 (due 12 Feb)
-- **HIGH**: PR Coursework (due 12 Feb)
-- **CRITICAL**: Prepare for Mid-term Exam (17 Feb)
+- 🔄 **Problem Set 1** (5%) — 2026-01-29
+- ⬜ **Problem Set 2** (5%) — 2026-02-12
+- ⬜ **Mid-term Exam** (30%) — 2026-02-17
+- ⬜ **Problem Set 3** (5%) — 2026-02-26
+- ⬜ **Problem Set 4** (5%) — 2026-03-12
+- ⬜ **Paper Study** (20%) — 2026-03-26
+- ⬜ **Final Exam** (30%) — TBD
 
-### Week of 17-23 Feb
-- **EXAM**: Distributed Optimisation Mid-term (17 Feb)
-- Start PS3
-- Continue CV section coursework
+Progress: 0/7 completed
 
-### Week of 24 Feb - 2 Mar
-- **HIGH**: Distributed Optimisation PS3 (due 26 Feb)
-- Work on Predictive Control Core Part 2
-- Watch Applied Adv. Optimisation videos
+### [cv] Computer Vision and Pattern Recognition
 
----
+- ⬜ **Pattern Recognition Coursework** — 2026-02-12
+- ⬜ **Computer Vision Coursework** — 2026-03-18
+- ⬜ **Wiseflow Test** — 2026-03-13
 
-## Assessment Weights Summary
+Progress: 0/3 completed
 
-| Course | Component | Weight |
-|--------|-----------|--------|
-| **Predictive Control** | All coursework + Oral | 100% |
-| **Distributed Optimisation** | Problem Sets (4x) | 20% |
-| | Paper Study | 20% |
-| | Mid-term Exam | 30% |
-| | Final Exam | 30% |
-| **Computer Vision & PR** | PR Coursework | ~33% |
-| | CV Coursework | ~33% |
-| | Wiseflow Test | ~33% |
-| **Applied Adv. Optimisation** | iRAT | 5% |
-| | tRAT | 20% |
-| | Peer Assessment | 10% |
-| | Final Exam | 65% |
+### [ao] Applied Advanced Optimisation
+
+- 🔁 **iRAT (weekly)** (5%) — ongoing
+- 🔁 **tRAT (weekly)** (20%) — ongoing
+- ⬜ **Peer Assessment** (10%) — TBD
+- ⬜ **Final Exam** (65%) — TBD
+
+Progress: 0/4 completed

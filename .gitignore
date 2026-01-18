@@ -11,6 +11,8 @@ __pycache__/
 *.so
 .env
 venv/
+.pytest_cache/
+*.egg-info/
 
 # IDE
 .idea/
@@ -18,5 +20,13 @@ venv/
 *.swp
 *.swo
 
-# Personal notes (if you want to keep some things private)
+# Backups (keep locally, not in git)
+# Uncomment if you don't want backups in git:
+# backups/
+
+# Temp files
+*.tmp
+*.json.tmp
+
+# Personal notes
 # personal_notes.md

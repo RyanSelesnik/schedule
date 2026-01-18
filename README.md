@@ -2,34 +2,50 @@
 
 A personal study management system for Imperial College EEE MSc courses (Spring 2026).
 
+## Features
+
+- **Progress Tracking** - Track assessment status, scores, and study hours
+- **Data Validation** - Prevents invalid data entry with helpful error messages
+- **Automatic Backups** - Every save creates a timestamped backup
+- **Calendar Integration** - Syncs deadlines to macOS Calendar with alerts
+- **Single Source of Truth** - Markdown files generated from JSON data
+- **Flexible CLI** - Short codes and status aliases for quick updates
+
 ## Courses Tracked
 
-| Code | Course | Assessment |
-|------|--------|------------|
-| ELEC70028 | Predictive Control | 100% Coursework + Oral |
-| ELEC70082 | Distributed Optimisation and Learning | Mixed (PS 20%, Paper 20%, Exams 60%) |
-| ELEC70073 | Computer Vision and Pattern Recognition | Coursework + Test |
-| ELEC70066 | Applied Advanced Optimisation | iRAT/tRAT 25%, Peer 10%, Exam 65% |
+| Code | Short | Course | Assessment |
+|------|-------|--------|------------|
+| ELEC70028 | `pc` | Predictive Control | 100% Coursework + Oral |
+| ELEC70082 | `do` | Distributed Optimisation and Learning | PS 20%, Paper 20%, Exams 60% |
+| ELEC70073 | `cv` | Computer Vision and Pattern Recognition | Coursework + Test |
+| ELEC70066 | `ao` | Applied Advanced Optimisation | iRAT/tRAT 25%, Peer 10%, Exam 65% |
 
 ## Quick Start
 
 ```bash
-# Check your next deadlines
+# See upcoming deadlines
 study next
 
 # See all assessment statuses
 study status
 
-# List all course codes and assessment keys
+# List course codes and assessment keys
 study courses
 
-# Update an assessment
-study u pc basic_part_2 submitted
+# Update an assessment (uses validation!)
+study u pc basic_part_2 done
+
+# Log study hours
+study h 2.5
+
+# Sync to git
+study sync "Finished PS1"
 ```
 
 ## Installation
 
-The `study` CLI should already be in your PATH. If not, run:
+The `study` CLI should be in your PATH. If not:
+
 ```bash
 echo 'export PATH="$PATH:/Users/ryanselesnik/study/scripts"' >> ~/.zshrc
 source ~/.zshrc
@@ -43,288 +59,203 @@ USAGE: study <command> [args]
 TRACKER COMMANDS:
     status,   s              Show all assessment statuses
     courses,  c              List course codes and assessment keys
-    next,     n              Show upcoming deadlines
+    next,     n [count]      Show upcoming deadlines (default: 5)
     update,   u <course> <assessment> <status>
     score       <course> <assessment> <score>
     hours,    h <hours>      Log study hours
     partner     <name>       Set CV&PR coursework partner
     paper       <title>      Set Dist.Optim paper topic
 
+DATA COMMANDS:
+    generate, g              Regenerate markdown files from tracker.json
+    calendar  [--regen]      Sync calendar with tracker (--regen clears first)
+    backup                   List available backups
+    restore     <backup>     Restore a backup file
+
 GIT COMMANDS:
     sync      [message]      Commit and push all changes
     pull                     Pull latest changes
-
-CALENDAR:
-    alerts                   Add notification alerts to deadlines
-
-COURSE SHORT CODES:
-    pc = Predictive Control
-    do = Distributed Optimisation
-    cv = Computer Vision & PR
-    ao = Applied Advanced Optimisation
 ```
+
+## Course Codes
+
+Use short codes for faster typing:
+
+| Short | Full Code | Course |
+|-------|-----------|--------|
+| `pc` | ELEC70028 | Predictive Control |
+| `do` | ELEC70082 | Distributed Optimisation |
+| `cv` | ELEC70073 | Computer Vision & PR |
+| `ao` | ELEC70066 | Applied Advanced Optimisation |
+
+## Status Options
+
+Valid statuses and their aliases:
+
+| Status | Aliases |
+|--------|---------|
+| `not_started` | `todo`, `pending` |
+| `in_progress` | `wip`, `working`, `started` |
+| `completed` | `done`, `finished` |
+| `submitted` | `submit`, `sent` |
+| `overdue` | `late` |
 
 ## Project Structure
 
 ```
 study/
 ├── README.md                 # This file
-├── courses.json              # Course database (JSON)
-├── deadlines.md              # Deadline overview (human-readable)
-├── weekly_schedule.md        # Weekly study plan
-├── syllabus_detailed.md      # Week-by-week topic breakdowns
-├── tracker.json              # Progress tracking data
-└── scripts/
-    ├── study                 # Main CLI entry point
-    ├── update_tracker.py     # Progress tracker (Python)
-    ├── sync.sh               # Git sync helper
-    ├── create_calendar.sh    # Create macOS calendar
-    ├── add_study_events.sh   # Add study sessions to calendar
-    ├── add_deadlines.sh      # Add deadlines to calendar
-    └── add_alerts.sh         # Add notification alerts
+├── tracker.json              # Main data file (source of truth)
+├── courses.json              # Course metadata
+├── deadlines.md              # Generated from tracker.json
+├── weekly_schedule.md        # Study schedule
+├── syllabus_detailed.md      # Topic breakdowns
+├── pytest.ini                # Test configuration
+│
+├── src/                      # Python package
+│   ├── __init__.py
+│   ├── cli.py               # Main CLI entry point
+│   ├── config.py            # Configuration and constants
+│   ├── data.py              # Data loading/saving with backups
+│   ├── validation.py        # Input validation
+│   ├── tracker.py           # Core tracker operations
+│   ├── generator.py         # Markdown generation
+│   └── calendar_sync.py     # macOS Calendar integration
+│
+├── scripts/                  # Shell scripts
+│   ├── study                # CLI wrapper (delegates to src/cli.py)
+│   └── *.sh                 # Legacy scripts
+│
+├── tests/                    # Unit tests
+│   ├── test_validation.py
+│   └── test_data.py
+│
+└── backups/                  # Automatic backups
+    └── tracker_YYYYMMDD_HHMMSS.json
 ```
 
-## Features
+## Data Validation
 
-### 1. macOS Calendar Integration
+The system validates all inputs:
 
-A **"Study Schedule"** calendar is created with:
-- Weekly study sessions for each course
-- All assessment deadlines
-- Exam dates and reminders
-
-**Recreate calendar events:**
 ```bash
-# If you need to recreate the calendar
-./scripts/create_calendar.sh
-./scripts/add_study_events.sh
-./scripts/add_deadlines.sh
+# Invalid course code
+$ study u invalid ps1 done
+❌ Validation error: Unknown course: 'invalid'
+Valid options: ELEC70028, ELEC70066, ELEC70073, ELEC70082, ao, cv, do, pc
+
+# Invalid status
+$ study u pc ps1 badstatus
+❌ Validation error: Invalid status: 'badstatus'
+Valid options: completed, in_progress, not_started, ongoing, overdue, submitted
+Aliases: done, finished, submit, started, working, wip, todo, pending, late
+
+# Ambiguous assessment key
+$ study u pc basic done
+❌ Validation error: Ambiguous assessment key: 'basic'
+Did you mean one of: basic_part_1, basic_part_2?
 ```
 
-### 2. Progress Tracker CLI
+## Automatic Backups
 
-Track your progress through assessments using the command-line tool.
+Every time you save data, a backup is created:
 
-#### View Status
 ```bash
-# Show all assessment statuses with visual indicators
-python scripts/update_tracker.py status
+# List backups
+$ study backup
+Available backups:
+  tracker_20260118_143309.json     2026-01-18 14:33
 
-# Output shows:
-# ⬜ not_started
-# 🔄 in_progress
-# ✅ completed
-# 📤 submitted
-# 🔴 overdue
-# 🔁 ongoing
+# Restore a backup
+$ study restore tracker_20260118_143309.json
+✓ Restored from tracker_20260118_143309.json
 ```
 
-#### View Next Deadlines
+Backups are stored in `backups/` and the 10 most recent are kept.
+
+## Generating Files
+
+The `deadlines.md` file is generated from `tracker.json`:
+
 ```bash
-# Show upcoming deadlines with days remaining
-python scripts/update_tracker.py next
+$ study generate
+✓ Generated files:
+  /Users/ryanselesnik/study/deadlines.md
 ```
 
-#### Update Assessment Status
+Run this after making changes to keep markdown files in sync.
+
+## Calendar Integration
+
+Sync deadlines to macOS Calendar:
+
 ```bash
-python scripts/update_tracker.py update <COURSE_CODE> <assessment_key> <status>
+# Add deadline events with alerts
+$ study calendar
+Syncing calendar...
+✓ Created 12 deadline events
+✓ Created 70 study session events
 
-# Examples:
-python scripts/update_tracker.py update ELEC70028 basic_part_2 submitted
-python scripts/update_tracker.py update ELEC70082 ps1 completed
-python scripts/update_tracker.py update ELEC70073 pr_coursework in_progress
-
-# Status options: not_started, in_progress, completed, submitted, overdue
+# Regenerate all events (clears existing first)
+$ study calendar --regen
 ```
 
-#### Record Scores
+Events get alerts at 1 day, 2 hours, and 30 minutes before deadlines.
+
+## Running Tests
+
 ```bash
-python scripts/update_tracker.py score <COURSE_CODE> <assessment_key> <score>
+# Install pytest first
+pip install pytest
 
-# Examples:
-python scripts/update_tracker.py score ELEC70082 ps1 pass
-python scripts/update_tracker.py score ELEC70082 midterm 78
-python scripts/update_tracker.py score ELEC70073 pr_coursework 85
+# Run tests
+pytest tests/ -v
 ```
 
-#### Log Study Hours
+## Workflow Example
+
 ```bash
-python scripts/update_tracker.py hours <hours>
+# Start of day - pull latest
+study pull
 
-# Example: Log 3 hours of study
-python scripts/update_tracker.py hours 3
+# Check what's due
+study next
+
+# Do some work...
+
+# Log progress
+study u pc basic_part_2 done
+study h 3
+
+# Regenerate markdown
+study generate
+
+# Sync to git
+study sync "Completed Basic Part 2"
 ```
 
-#### Set Coursework Partner (CV&PR)
-```bash
-python scripts/update_tracker.py partner ELEC70073 "Partner Name"
-```
+## Assessment Keys Reference
 
-#### Set Paper Study Topic (Distributed Optimisation)
-```bash
-python scripts/update_tracker.py paper "Federated Learning with Differential Privacy"
-```
+Run `study courses` for the full list. Common ones:
 
-### 3. Assessment Keys Reference
+**Predictive Control (pc)**
+- `basic_part_1`, `basic_part_2`, `core_part_1`, `core_part_2`, `oral_exam`
 
-Use these keys with the tracker:
+**Distributed Optimisation (do)**
+- `ps1`, `ps2`, `ps3`, `ps4`, `midterm`, `paper_study`, `final_exam`
 
-**ELEC70028 (Predictive Control)**
-- `basic_part_1` - Basic Part 1 (due 16 Jan)
-- `basic_part_2` - Basic Part 2 (due 30 Jan)
-- `core_part_1` - Core Part 1 (due 6 Feb)
-- `core_part_2` - Core Part 2 (due 13 Mar)
-- `oral_exam` - Oral Examination (16-20 Mar)
+**Computer Vision & PR (cv)**
+- `pr_coursework`, `cv_coursework`, `wiseflow_test`
 
-**ELEC70082 (Distributed Optimisation)**
-- `ps1` - Problem Set 1 (due 29 Jan)
-- `ps2` - Problem Set 2 (due 12 Feb)
-- `midterm` - Mid-term Exam (17 Feb)
-- `ps3` - Problem Set 3 (due 26 Feb)
-- `ps4` - Problem Set 4 (due 12 Mar)
-- `paper_study` - Paper Study (due 26 Mar)
-- `final_exam` - Final Exam (TBD)
-
-**ELEC70073 (Computer Vision & PR)**
-- `pr_coursework` - Pattern Recognition CW (due 12 Feb)
-- `cv_coursework` - Computer Vision CW (due 18 Mar)
-- `wiseflow_test` - Wiseflow Test (13 Mar)
-
-**ELEC70066 (Applied Adv. Optimisation)**
-- `irat` - Weekly individual test
-- `trat` - Weekly team test
-- `peer_assessment` - Peer Assessment
-- `final_exam` - Final Exam (TBD)
-
-### 4. Reference Files
-
-#### `deadlines.md`
-Human-readable deadline overview with:
-- Chronological list of all deadlines
-- Weekly priority focus guide
-- Assessment weight summary
-
-#### `weekly_schedule.md`
-Your study schedule showing:
-- Fixed class times
-- Recommended study blocks for each day
-- Subject rotation guide
-
-#### `syllabus_detailed.md`
-Detailed breakdown including:
-- Week-by-week topics for each course
-- Key concepts to master
-- Assessment strategies and tips
-
-#### `courses.json`
-Machine-readable database with:
-- Course schedules
-- Assessment details and deadlines
-- Topic lists
-- Lecturer contact info
-
-## Weekly Workflow
-
-### Monday - Predictive Control Day
-1. Morning: Study/MATLAB work (9:00-12:00)
-2. Lecture at 16:00
-
-### Tuesday - Distributed Optimisation Day
-1. Study before class (9:00-11:00)
-2. Class at 11:00
-
-### Wednesday - CV & PR Day
-1. No classes - full study day
-2. Work on coursework with partner
-
-### Thursday - Split Day
-1. Dist. Optim lecture (9:00-11:00)
-2. Review time (12:00-14:00)
-3. Pred. Control lecture (15:00-16:00)
-
-### Friday - Heavy Lecture Day
-1. **WATCH Applied Adv. Optim videos** (9:00-11:00)
-2. Applied Adv. Optim class (11:00-13:00)
-3. CV & PR lecture (14:00-16:00)
-
-### Saturday - Deep Work
-Focus on most urgent deadline (10:00-13:00)
-
-### Sunday - Review
-Weekly review and catch-up (14:00-17:00)
+**Applied Advanced Optimisation (ao)**
+- `irat`, `trat`, `peer_assessment`, `final_exam`
 
 ## Key Reminders
 
-### Predictive Control
-- Basic assignments: **First submission counts** (5 attempts)
-- Core assignments: **Last submission counts** (20 attempts)
-- Test code locally before MATLAB Grader submission
-- **Do NOT book travel 16-20 March** (oral exam period)
-
-### Distributed Optimisation
-- Problem sets are **pass/fail** (5% each)
-- All deadlines at **16:00**
-- Mid-term covers Parts I & II only
-- Paper study: reproduce numerical results
-
-### Computer Vision & PR
-- Coursework done in **pairs** - find partner early!
-- Wiseflow test is **closed book, in-person**
-
-### Applied Advanced Optimisation
-- **MUST watch videos before Friday class**
-- iRAT tests video content immediately
-- Participate actively for peer assessment marks
-
-## Syncing Changes
-
-**IMPORTANT: Always commit and push after making changes!**
-
-This keeps your progress backed up and synced across devices.
-
-### After Every Update
-
-```bash
-# Quick sync (run after any change)
-git add -A && git commit -m "Update progress" && git push
-```
-
-### When to Sync
-
-Always commit and push after:
-- Updating assessment status (`update_tracker.py update ...`)
-- Recording scores (`update_tracker.py score ...`)
-- Logging study hours (`update_tracker.py hours ...`)
-- Editing any files manually
-- Adding new deadlines or events
-
-### Sync Script (Optional)
-
-For convenience, you can use:
-```bash
-./scripts/sync.sh
-```
-
-### Pull Before Starting
-
-If you use multiple devices, always pull first:
-```bash
-git pull
-```
-
-### Example Workflow
-
-```bash
-# 1. Start of study session - pull latest
-git pull
-
-# 2. Log your work
-python scripts/update_tracker.py update ELEC70028 basic_part_2 submitted
-python scripts/update_tracker.py hours 2.5
-
-# 3. Sync changes
-git add -A && git commit -m "Submitted Basic Part 2, logged 2.5 hrs" && git push
-```
+- **Predictive Control**: Basic = first submission counts (5 attempts), Core = last submission counts (20 attempts)
+- **Distributed Optimisation**: Problem sets are pass/fail, deadlines at 16:00
+- **CV & PR**: Coursework done in pairs - find partner early!
+- **Applied Advanced Optimisation**: MUST watch videos before Friday class for iRAT
 
 ## License
 
