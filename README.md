@@ -15,10 +15,53 @@ A personal study management system for Imperial College EEE MSc courses (Spring 
 
 ```bash
 # Check your next deadlines
-python scripts/update_tracker.py next
+study next
 
 # See all assessment statuses
-python scripts/update_tracker.py status
+study status
+
+# List all course codes and assessment keys
+study courses
+
+# Update an assessment
+study u pc basic_part_2 submitted
+```
+
+## Installation
+
+The `study` CLI should already be in your PATH. If not, run:
+```bash
+echo 'export PATH="$PATH:/Users/ryanselesnik/study/scripts"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+## CLI Reference
+
+```
+USAGE: study <command> [args]
+
+TRACKER COMMANDS:
+    status,   s              Show all assessment statuses
+    courses,  c              List course codes and assessment keys
+    next,     n              Show upcoming deadlines
+    update,   u <course> <assessment> <status>
+    score       <course> <assessment> <score>
+    hours,    h <hours>      Log study hours
+    partner     <name>       Set CV&PR coursework partner
+    paper       <title>      Set Dist.Optim paper topic
+
+GIT COMMANDS:
+    sync      [message]      Commit and push all changes
+    pull                     Pull latest changes
+
+CALENDAR:
+    alerts                   Add notification alerts to deadlines
+
+COURSE SHORT CODES:
+    pc = Predictive Control
+    do = Distributed Optimisation
+    cv = Computer Vision & PR
+    ao = Applied Advanced Optimisation
 ```
 
 ## Project Structure
@@ -32,12 +75,13 @@ study/
 ├── syllabus_detailed.md      # Week-by-week topic breakdowns
 ├── tracker.json              # Progress tracking data
 └── scripts/
+    ├── study                 # Main CLI entry point
+    ├── update_tracker.py     # Progress tracker (Python)
+    ├── sync.sh               # Git sync helper
     ├── create_calendar.sh    # Create macOS calendar
     ├── add_study_events.sh   # Add study sessions to calendar
     ├── add_deadlines.sh      # Add deadlines to calendar
-    ├── add_alerts.sh         # Add notification alerts to deadlines
-    ├── update_tracker.py     # Progress tracker CLI
-    └── sync.sh               # Quick git sync (commit + push)
+    └── add_alerts.sh         # Add notification alerts
 ```
 
 ## Features
