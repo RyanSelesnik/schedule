@@ -242,9 +242,9 @@ def show_next_deadlines():
 
     deadlines.sort(key=lambda x: x[0])
 
-    print("\n" + "="*50)
+    print("\n" + "="*55)
     print("NEXT DEADLINES")
-    print("="*50)
+    print("="*55)
 
     today = datetime.now()
     for dl_date, code, name, status in deadlines[:5]:
@@ -258,9 +258,11 @@ def show_next_deadlines():
         else:
             days_str = f"{days_left} days left"
 
+        alias = [k for k, v in COURSE_ALIASES.items() if v == code][0]
+        course_name = COURSE_NAMES.get(code, code)
         print(f"\n{dl_date.strftime('%d %b')}: {name}")
-        print(f"  Course: {code}")
-        print(f"  Status: {status} | {days_str}")
+        print(f"  [{alias}] {course_name}")
+        print(f"  {status} | {days_str}")
 
 def main():
     if len(sys.argv) < 2:
