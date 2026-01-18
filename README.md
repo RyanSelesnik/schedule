@@ -35,7 +35,9 @@ study/
     ├── create_calendar.sh    # Create macOS calendar
     ├── add_study_events.sh   # Add study sessions to calendar
     ├── add_deadlines.sh      # Add deadlines to calendar
-    └── update_tracker.py     # Progress tracker CLI
+    ├── add_alerts.sh         # Add notification alerts to deadlines
+    ├── update_tracker.py     # Progress tracker CLI
+    └── sync.sh               # Quick git sync (commit + push)
 ```
 
 ## Features
@@ -232,11 +234,52 @@ Weekly review and catch-up (14:00-17:00)
 
 ## Syncing Changes
 
+**IMPORTANT: Always commit and push after making changes!**
+
+This keeps your progress backed up and synced across devices.
+
+### After Every Update
+
 ```bash
-# After updating tracker or files
-git add -A
-git commit -m "Update progress"
-git push
+# Quick sync (run after any change)
+git add -A && git commit -m "Update progress" && git push
+```
+
+### When to Sync
+
+Always commit and push after:
+- Updating assessment status (`update_tracker.py update ...`)
+- Recording scores (`update_tracker.py score ...`)
+- Logging study hours (`update_tracker.py hours ...`)
+- Editing any files manually
+- Adding new deadlines or events
+
+### Sync Script (Optional)
+
+For convenience, you can use:
+```bash
+./scripts/sync.sh
+```
+
+### Pull Before Starting
+
+If you use multiple devices, always pull first:
+```bash
+git pull
+```
+
+### Example Workflow
+
+```bash
+# 1. Start of study session - pull latest
+git pull
+
+# 2. Log your work
+python scripts/update_tracker.py update ELEC70028 basic_part_2 submitted
+python scripts/update_tracker.py hours 2.5
+
+# 3. Sync changes
+git add -A && git commit -m "Submitted Basic Part 2, logged 2.5 hrs" && git push
 ```
 
 ## License
