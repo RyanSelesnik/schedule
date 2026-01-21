@@ -165,111 +165,124 @@ def create_calendar() -> str:
     return run_applescript(script)
 
 
-def clear_calendar_events(start_date: datetime, end_date: datetime) -> int:
+def clear_calendar() -> int:
     """
-    Clear events in date range (for regeneration).
+    Clear all events by deleting and recreating the calendar.
 
-    Args:
-        start_date: Start of date range
-        end_date: End of date range
+    This is much faster than deleting events one by one.
 
     Returns:
-        Number of events deleted
-
-    Raises:
-        CalendarError: If clearing fails
+        1 if calendar was cleared, 0 otherwise
     """
+    # Delete calendar if it exists, then create fresh
     script = f'''
     tell application "Calendar"
-        set studyCal to calendar "{CALENDAR_NAME}"
-        set startDate to date "{start_date.strftime("%A, %d %B %Y")}"
-        set endDate to date "{end_date.strftime("%A, %d %B %Y")}"
-        set eventsToDelete to (every event of studyCal whose start date >= startDate and start date <= endDate)
-        set deletedCount to count of eventsToDelete
-        repeat with evt in eventsToDelete
-            delete evt
-        end repeat
-        return deletedCount
+        try
+            delete calendar "{CALENDAR_NAME}"
+        end try
+        make new calendar with properties {{name:"{CALENDAR_NAME}"}}
+        return "ok"
     end tell
     '''
     try:
-        result = run_applescript(script)
-        return int(result) if result.isdigit() else 0
+        run_applescript(script, timeout=30)
+        return 1
     except CalendarError as e:
-        # Log but don't fail - clearing is optional
-        print(f"Warning: Could not clear existing events: {e}")
-        return 0
+        # Try just creating it
+        try:
+            create_calendar()
+            return 0
+        except CalendarError:
+            print(f"Warning: Could not clear calendar: {e}")
+            return 0
 
 
-@with_retry(max_retries=2)
-def add_event(
+def _escape_applescript(s: str) -> str:
+    """Escape special characters for AppleScript strings."""
+    return s.replace("\\", "\\\\").replace('"', '\\"')
+
+
+def _format_event_script(
     summary: str,
     start: datetime,
     end: datetime,
     description: str = "",
     alerts: Optional[List[int]] = None,
-) -> bool:
-    """
-    Add a single event to the calendar.
-
-    Args:
-        summary: Event title
-        start: Start datetime
-        end: End datetime
-        description: Event description
-        alerts: List of alert times in minutes before event (negative values)
-
-    Returns:
-        True if event was created successfully
-
-    Raises:
-        CalendarEventError: If event creation fails after retries
-    """
-    if alerts is None:
-        alerts = []
-
+) -> str:
+    """Generate AppleScript commands for a single event (no tell block)."""
     start_str = start.strftime("%A, %d %B %Y at %H:%M:%S")
     end_str = end.strftime("%A, %d %B %Y at %H:%M:%S")
-
-    # Escape special characters in strings for AppleScript
-    summary_escaped = summary.replace("\\", "\\\\").replace('"', '\\"')
-    description_escaped = description.replace("\\", "\\\\").replace('"', '\\"')
+    summary_escaped = _escape_applescript(summary)
+    description_escaped = _escape_applescript(description)
 
     alert_commands = ""
     if alerts:
         for mins in alerts:
             alert_commands += f"""
-                make new sound alarm with properties {{trigger interval:{mins}}}
-            """
+            make new sound alarm with properties {{trigger interval:{mins}}}"""
 
     script = f'''
+        set newEvent to make new event at studyCal with properties {{summary:"{summary_escaped}", start date:date "{start_str}", end date:date "{end_str}", description:"{description_escaped}"}}'''
+
+    if alert_commands:
+        script += f'''
+        tell newEvent{alert_commands}
+        end tell'''
+
+    return script
+
+
+@with_retry(max_retries=2)
+def add_events_batch(events: List[Dict]) -> int:
+    """
+    Add multiple events in a single AppleScript call.
+
+    Args:
+        events: List of event dicts with keys: summary, start, end, description, alerts
+
+    Returns:
+        Number of events created successfully
+    """
+    if not events:
+        return 0
+
+    # Build all event creation commands
+    event_scripts = []
+    for evt in events:
+        script = _format_event_script(
+            summary=evt["summary"],
+            start=evt["start"],
+            end=evt["end"],
+            description=evt.get("description", ""),
+            alerts=evt.get("alerts"),
+        )
+        event_scripts.append(script)
+
+    # Combine into single AppleScript
+    combined_script = f'''
     tell application "Calendar"
         set studyCal to calendar "{CALENDAR_NAME}"
-        set newEvent to make new event at studyCal with properties {{summary:"{summary_escaped}", start date:date "{start_str}", end date:date "{end_str}", description:"{description_escaped}"}}
-        tell newEvent
-            {alert_commands}
-        end tell
-        return "success"
+        {"".join(event_scripts)}
+        return {len(events)}
     end tell
     '''
 
     try:
-        run_applescript(script)
-        return True
+        result = run_applescript(combined_script, timeout=120)
+        return int(result) if result.isdigit() else len(events)
     except CalendarError as e:
-        raise CalendarEventError(summary, str(e))
+        raise CalendarEventError("batch creation", str(e))
 
 
-def generate_deadline_events() -> Dict[str, int]:
+def collect_deadline_events() -> List[Dict]:
     """
-    Generate calendar events for all deadlines from tracker.json.
+    Collect all deadline events from tracker.json.
 
     Returns:
-        Dict with 'created' and 'failed' counts
+        List of event dicts ready for batch creation
     """
     data = load_tracker()
-    results = {"created": 0, "failed": 0, "skipped": 0}
-    errors = []
+    events = []
 
     for code, course in data["courses"].items():
         alias = CODE_TO_ALIAS.get(code, "??")
@@ -281,10 +294,8 @@ def generate_deadline_events() -> Dict[str, int]:
 
             # Skip completed, submitted, or no deadline
             if status in ("completed", "submitted"):
-                results["skipped"] += 1
                 continue
             if not deadline or deadline in ("TBD", "ongoing"):
-                results["skipped"] += 1
                 continue
 
             try:
@@ -314,44 +325,32 @@ def generate_deadline_events() -> Dict[str, int]:
                     start_date = dl_date
                     summary = f"DEADLINE: [{alias}] {assessment['name']}"
 
-                # Add event with alerts
+                # Collect event
                 weight = assessment.get("weight", "")
                 desc = f"{course_name}\n{assessment['name']}"
                 if weight:
                     desc += f"\nWeight: {weight}"
 
-                if add_event(
-                    summary=summary,
-                    start=start_date,
-                    end=end_date,
-                    description=desc,
-                    alerts=[-1440, -120, -30],  # 1 day, 2 hours, 30 mins
-                ):
-                    results["created"] += 1
+                events.append({
+                    "summary": summary,
+                    "start": start_date,
+                    "end": end_date,
+                    "description": desc,
+                    "alerts": [-1440, -120, -30],  # 1 day, 2 hours, 30 mins
+                })
 
-            except ValueError as e:
-                errors.append(f"{key}: invalid date format ({deadline})")
-                results["failed"] += 1
-            except CalendarEventError as e:
-                errors.append(f"{key}: {e.message}")
-                results["failed"] += 1
+            except ValueError:
+                # Skip invalid dates
+                continue
 
-    # Report errors if any
-    if errors:
-        print(f"\nWarnings during deadline sync:")
-        for err in errors[:5]:  # Show first 5
-            print(f"  - {err}")
-        if len(errors) > 5:
-            print(f"  ... and {len(errors) - 5} more")
-
-    return results
+    return events
 
 
-def generate_study_sessions(
+def collect_study_sessions(
     start_date: datetime, end_date: datetime, schedule: Dict[str, Dict]
-) -> Dict[str, int]:
+) -> List[Dict]:
     """
-    Generate recurring study sessions.
+    Collect recurring study session events.
 
     Args:
         start_date: First day to generate
@@ -359,9 +358,9 @@ def generate_study_sessions(
         schedule: Dict mapping weekday names to session configs
 
     Returns:
-        Dict with 'created' and 'failed' counts
+        List of event dicts ready for batch creation
     """
-    results = {"created": 0, "failed": 0}
+    events = []
     current = start_date
 
     while current <= end_date:
@@ -379,25 +378,24 @@ def generate_study_sessions(
                 hour=end_time.hour, minute=end_time.minute, second=0, microsecond=0
             )
 
-            try:
-                if add_event(
-                    summary=session["title"],
-                    start=event_start,
-                    end=event_end,
-                    description=session.get("description", ""),
-                ):
-                    results["created"] += 1
-            except CalendarEventError:
-                results["failed"] += 1
+            events.append({
+                "summary": session["title"],
+                "start": event_start,
+                "end": event_end,
+                "description": session.get("description", ""),
+            })
 
         current += timedelta(days=1)
 
-    return results
+    return events
 
 
 def sync_calendar(regenerate: bool = True) -> Dict[str, int]:
     """
     Sync calendar with current tracker data.
+
+    Uses batch event creation for performance (single AppleScript call
+    instead of one per event).
 
     Args:
         regenerate: If True (default), clear existing events first to avoid duplicates
@@ -409,20 +407,15 @@ def sync_calendar(regenerate: bool = True) -> Dict[str, int]:
         CalendarConnectionError: If Calendar.app is not available
         CalendarPermissionError: If calendar access is denied
     """
-    # First, ensure we can access the calendar
-    create_calendar()
-
     results = {"deadlines": 0, "study_sessions": 0, "failed": 0, "cleared": 0}
 
-    # Always clear existing events to avoid duplicates
+    # Clear calendar by deleting and recreating (much faster than deleting events)
+    results["cleared"] = clear_calendar()
     today = datetime.now()
-    end = today + timedelta(days=90)
-    results["cleared"] = clear_calendar_events(today, end)
 
-    # Generate deadline events
-    deadline_results = generate_deadline_events()
-    results["deadlines"] = deadline_results["created"]
-    results["failed"] += deadline_results["failed"]
+    # Collect all events first (fast, no I/O)
+    deadline_events = collect_deadline_events()
+    results["deadlines"] = len(deadline_events)
 
     # Study session schedule
     study_schedule = {
@@ -470,17 +463,23 @@ def sync_calendar(regenerate: bool = True) -> Dict[str, int]:
         },
     }
 
-    # Generate for next 10 weeks
-    today = datetime.now()
-    # Start from next occurrence of Monday
+    # Collect study sessions for next 10 weeks
     days_until_monday = (7 - today.weekday()) % 7
     if days_until_monday == 0:
         days_until_monday = 7
     start = today + timedelta(days=days_until_monday - 7)  # Include this week
     end = start + timedelta(weeks=10)
 
-    session_results = generate_study_sessions(start, end, study_schedule)
-    results["study_sessions"] = session_results["created"]
-    results["failed"] += session_results["failed"]
+    session_events = collect_study_sessions(start, end, study_schedule)
+    results["study_sessions"] = len(session_events)
+
+    # Batch create all events in a single AppleScript call
+    all_events = deadline_events + session_events
+    try:
+        add_events_batch(all_events)
+    except CalendarEventError:
+        results["failed"] = len(all_events)
+        results["deadlines"] = 0
+        results["study_sessions"] = 0
 
     return results
