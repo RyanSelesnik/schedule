@@ -86,17 +86,21 @@ def print_help():
     {cyan("courses")},  {cyan("c")}              List course codes and assessment keys
     {cyan("next")},     {cyan("n")} [count]      Show upcoming deadlines
     {cyan("week")},     {cyan("w")}              Show weekly summary
-    {cyan("update")},   {cyan("u")} <course> <#|key> <status>
+
+{bold("QUICK UPDATES:")}
+    {cyan("log")}         <hours> [course]   Log study time {dim("(also: h, hours)")}
+    {cyan("done")}        <course> <#|key>   Mark assessment as complete
+    {cyan("wip")}         <course> <#|key>   Mark assessment as in progress
+    {cyan("update")},   {cyan("u")} <course> <#|key> <status>  {dim("(any status)")}
     {cyan("score")}       <course> <#|key> <score>
-    {cyan("hours")},    {cyan("h")} <hours> [course]   Log study hours
-    {cyan("undo")}                       Undo last change
-    {cyan("history")}                    Show recent changes
-    {cyan("partner")}     <name>         Set CV&PR coursework partner
-    {cyan("paper")}       <title>        Set Dist.Optim paper topic
+    {cyan("undo")}                          Undo last change
+    {cyan("history")}                       Show recent changes
+    {cyan("partner")}     <name>            Set CV&PR coursework partner
+    {cyan("paper")}       <title>           Set Dist.Optim paper topic
 
 {bold("DATA COMMANDS:")}
     {cyan("generate")}, {cyan("g")}              Regenerate markdown files
-    {cyan("calendar")}  [--regen] [-y]  Sync calendar (--regen to clear first)
+    {cyan("calendar")}                  Sync calendar (clears existing events)
     {cyan("backup")}                    List available backups
     {cyan("restore")}     <backup>      Restore a backup file
 
@@ -117,9 +121,9 @@ def print_help():
 {bold("EXAMPLES:")}
     study next              {dim("# Show upcoming deadlines")}
     study s                 {dim("# Show status with progress")}
-    study u pc 2 done       {dim("# Update 2nd PC assessment to done")}
-    study u do ps1 wip      {dim("# Update by key name")}
-    study h 2.5 pc          {dim("# Log 2.5h for Predictive Control")}
+    study log 2.5 pc        {dim("# Log 2.5h for Predictive Control")}
+    study done pc 2         {dim("# Mark 2nd PC assessment as done")}
+    study wip do ps1        {dim("# Mark DO Problem Set 1 as in progress")}
     study undo              {dim("# Undo last change")}
     study week              {dim("# Show weekly summary")}
 
@@ -281,20 +285,12 @@ def cmd_pull():
 
 
 def cmd_calendar(args: List[str], skip_confirm: bool = False):
-    """Calendar sync command with confirmation for regenerate."""
+    """Calendar sync command - always clears existing events to avoid duplicates."""
     from src.calendar_sync import sync_calendar
-
-    regenerate = "--regen" in args or "-r" in args
-
-    # Confirm regeneration
-    if regenerate and not skip_confirm:
-        if not confirm("This will delete existing calendar events. Continue?"):
-            print("Cancelled")
-            return 0
 
     try:
         print_info("Syncing calendar...")
-        results = sync_calendar(regenerate=regenerate)
+        results = sync_calendar()
 
         print_success(f"Created {results['deadlines']} deadline events")
         print_success(f"Created {results['study_sessions']} study session events")
@@ -462,16 +458,36 @@ def main():
                 return 1
             record_score(cmd_args[0], cmd_args[1], cmd_args[2])
 
-        elif cmd in ("hours", "h"):
+        elif cmd in ("hours", "h", "log"):
             if not cmd_args:
-                print("Usage: study hours <hours> [course]")
+                print("Usage: study log <hours> [course]")
                 print(f"\n{dim('Examples:')}")
-                print("  study h 2.5        # Log 2.5 hours")
-                print("  study h 2.5 pc     # Log 2.5 hours for Predictive Control")
+                print("  study log 2.5        # Log 2.5 hours")
+                print("  study log 2.5 pc     # Log 2.5 hours for Predictive Control")
                 return 1
 
             course = cmd_args[1] if len(cmd_args) > 1 else None
             log_hours(cmd_args[0], course)
+
+        elif cmd == "done":
+            # Quick command to mark assessment as complete
+            if len(cmd_args) < 2:
+                print("Usage: study done <course> <#|key>")
+                print(f"\n{dim('Examples:')}")
+                print("  study done pc 2           # Mark 2nd PC assessment as done")
+                print("  study done do ps1         # Mark DO Problem Set 1 as done")
+                return 1
+            update_status(cmd_args[0], cmd_args[1], "completed")
+
+        elif cmd == "wip":
+            # Quick command to mark assessment as in progress
+            if len(cmd_args) < 2:
+                print("Usage: study wip <course> <#|key>")
+                print(f"\n{dim('Examples:')}")
+                print("  study wip pc 2           # Mark 2nd PC assessment as in progress")
+                print("  study wip do ps1         # Mark DO Problem Set 1 as in progress")
+                return 1
+            update_status(cmd_args[0], cmd_args[1], "in_progress")
 
         elif cmd == "undo":
             undo_last_change()

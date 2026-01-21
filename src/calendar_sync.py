@@ -395,12 +395,12 @@ def generate_study_sessions(
     return results
 
 
-def sync_calendar(regenerate: bool = False) -> Dict[str, int]:
+def sync_calendar(regenerate: bool = True) -> Dict[str, int]:
     """
     Sync calendar with current tracker data.
 
     Args:
-        regenerate: If True, clear existing events first
+        regenerate: If True (default), clear existing events first to avoid duplicates
 
     Returns:
         Dict with counts of created events by type
@@ -414,11 +414,10 @@ def sync_calendar(regenerate: bool = False) -> Dict[str, int]:
 
     results = {"deadlines": 0, "study_sessions": 0, "failed": 0, "cleared": 0}
 
-    if regenerate:
-        today = datetime.now()
-        end = today + timedelta(days=90)
-        results["cleared"] = clear_calendar_events(today, end)
-        print(f"Cleared {results['cleared']} existing events")
+    # Always clear existing events to avoid duplicates
+    today = datetime.now()
+    end = today + timedelta(days=90)
+    results["cleared"] = clear_calendar_events(today, end)
 
     # Generate deadline events
     deadline_results = generate_deadline_events()
