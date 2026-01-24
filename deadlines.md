@@ -1,6 +1,6 @@
 # Assessment Deadlines Overview
 
-**Generated:** 2026-01-18 14:33
+**Generated:** 2026-01-21 14:37
 
 > This file is auto-generated from tracker.json. Do not edit manually.
 > Run `study generate` to regenerate.

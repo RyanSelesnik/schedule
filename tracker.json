@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-01-18 16:37:20",
+  "last_updated": "2026-01-21 10:15:22",
   "courses": {
     "ELEC70028": {
       "name": "Predictive Control",
@@ -188,9 +188,12 @@
   "weekly_log": {
     "2026-W03": {
       "week_of": "2026-01-19",
-      "study_hours": 0,
+      "study_hours": 1.0,
       "completed_tasks": [],
-      "notes": ""
+      "notes": "",
+      "hours_by_course": {
+        "ELEC70028": 1.0
+      }
     },
     "2026-W02": {
       "week_of": "2026-01-12",
