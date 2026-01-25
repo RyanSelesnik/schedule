@@ -33,3 +33,4 @@ backups/
 
 # Claude Code local instructions (not shared)
 CLAUDE.md
+plan.json

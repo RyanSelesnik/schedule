@@ -37,6 +37,12 @@ from src.tracker import (
 )
 from src.data import list_backups, restore_backup
 from src.generator import generate_all
+from src.planner import (
+    create_plan,
+    get_plan_status,
+    stop_plan,
+    load_plan,
+)
 from src.ui import (
     Colors,
     bold,
@@ -98,6 +104,11 @@ def print_help():
     {cyan("partner")}     <name>            Set CV&PR coursework partner
     {cyan("paper")}       <title>           Set Dist.Optim paper topic
 
+{bold("PLANNING:")}
+    {cyan("plan")}         <blocks>       Start a study plan {dim("(e.g., '1h do, 1h pc')")}
+    {cyan("plan:status")}                 Show current plan status
+    {cyan("plan:stop")}                   Stop plan and log partial hours
+
 {bold("DATA COMMANDS:")}
     {cyan("generate")}, {cyan("g")}              Regenerate markdown files
     {cyan("calendar")}                  Sync calendar (clears existing events)
@@ -126,6 +137,7 @@ def print_help():
     study wip do ps1        {dim("# Mark DO Problem Set 1 as in progress")}
     study undo              {dim("# Undo last change")}
     study week              {dim("# Show weekly summary")}
+    study plan 1h do, 1h pc {dim("# Start a 2-block study session")}
 
 {bold("FLAGS:")}
     --no-color              Disable colored output
@@ -400,6 +412,168 @@ def cmd_generate():
         return 1
 
 
+def cmd_plan(args: List[str]):
+    """Start a study plan."""
+    if not args:
+        # Show current plan status if no args
+        return cmd_plan_status()
+
+    plan_str = " ".join(args)
+
+    # Check if there's already an active plan
+    existing = load_plan()
+    if existing:
+        status = get_plan_status()
+        if status and not status.get("completed"):
+            print_warning("A plan is already active!")
+            print(f"  Current: {status.get('current_course', 'Unknown')}")
+            print(f"  Time remaining: {status.get('time_remaining_mins', 0):.0f} min")
+            print()
+            print(f"Run {cyan('study plan:stop')} to stop it first.")
+            return 1
+
+    try:
+        plan = create_plan(plan_str)
+        blocks = plan["blocks"]
+
+        print_success("Study plan started!")
+        print()
+        print_header("BLOCKS")
+        total_mins = 0
+        for i, block in enumerate(blocks):
+            alias = block["course_code"][-5:]  # Last 5 chars of code
+            duration = block["duration_mins"]
+            total_mins += duration
+            if duration >= 60:
+                dur_str = (
+                    f"{duration // 60}h{duration % 60}m"
+                    if duration % 60
+                    else f"{duration // 60}h"
+                )
+            else:
+                dur_str = f"{duration}m"
+            print(f"  {i + 1}. {block['course_name']} ({dur_str})")
+
+        print()
+        total_hrs = total_mins / 60
+        print(f"Total: {total_hrs:.1f} hours")
+        print()
+
+        if plan.get("notifications_scheduled"):
+            print_info("Notifications scheduled via 'at' command")
+            print(dim("  (You'll be notified when each block ends)"))
+        else:
+            print_warning("Could not schedule notifications.")
+            print(
+                dim(
+                    "  Run 'sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.atrun.plist'"
+                )
+            )
+            print(dim("  to enable the 'at' command."))
+
+        return 0
+
+    except ValidationError as e:
+        print_error(e.message)
+        print()
+        print(f"{dim('Examples:')}")
+        print("  study plan 1h do, 1h pc")
+        print("  study plan 30m cv, 1.5h predictive")
+        return 1
+
+
+def cmd_plan_status():
+    """Show current plan status."""
+    status = get_plan_status()
+
+    if not status:
+        print_info("No active plan")
+        print()
+        print(f"Start one with: {cyan('study plan 1h do, 1h pc')}")
+        return 0
+
+    if status.get("completed"):
+        print_success("Plan completed!")
+        total = status.get("total_mins", 0)
+        print(
+            f"  Total: {total / 60:.1f} hours across {len(status.get('blocks', []))} blocks"
+        )
+        return 0
+
+    print_header("ACTIVE PLAN")
+    print()
+
+    # Current block
+    current = status.get("current_course", "Unknown")
+    remaining = status.get("time_remaining_mins", 0)
+    print(f"  {green('▶')} {bold(current)}")
+    print(f"    {remaining:.0f} min remaining")
+    print()
+
+    # Next up
+    next_course = status.get("next_course")
+    if next_course:
+        print(f"  {dim('Next:')} {next_course}")
+    else:
+        print(f"  {dim('(Last block)')}")
+
+    # All blocks
+    print()
+    print_header("ALL BLOCKS")
+    current_idx = status.get("current_block", 0)
+    for i, block in enumerate(status.get("blocks", [])):
+        dur = block["duration_mins"]
+        dur_str = (
+            f"{dur}m"
+            if dur < 60
+            else f"{dur // 60}h{dur % 60}m"
+            if dur % 60
+            else f"{dur // 60}h"
+        )
+        if i < current_idx:
+            print(f"  {green('✓')} {dim(block['course_name'])} ({dur_str})")
+        elif i == current_idx:
+            print(f"  {yellow('▶')} {bold(block['course_name'])} ({dur_str})")
+        else:
+            print(f"  {dim('○')} {block['course_name']} ({dur_str})")
+
+    print()
+    total_remaining = status.get("total_remaining_mins", 0)
+    print(f"Total remaining: {total_remaining:.0f} min")
+
+    return 0
+
+
+def cmd_plan_stop():
+    """Stop the current plan and log partial hours."""
+    status = get_plan_status()
+
+    if not status:
+        print_info("No active plan to stop")
+        return 0
+
+    if status.get("completed"):
+        print_info("Plan already completed")
+        from src.planner import clear_plan
+
+        clear_plan()
+        return 0
+
+    result = stop_plan(log_partial=True)
+
+    if result and result.get("logged"):
+        print_success("Plan stopped. Hours logged:")
+        for entry in result["logged"]:
+            status_str = "complete" if entry.get("complete") else "partial"
+            print(
+                f"  {green('✓')} {entry['course']}: {entry['hours']:.2f}h ({status_str})"
+            )
+    else:
+        print_success("Plan stopped (no hours to log)")
+
+    return 0
+
+
 def main():
     # Handle global flags
     args = sys.argv[1:]
@@ -484,8 +658,12 @@ def main():
             if len(cmd_args) < 2:
                 print("Usage: study wip <course> <#|key>")
                 print(f"\n{dim('Examples:')}")
-                print("  study wip pc 2           # Mark 2nd PC assessment as in progress")
-                print("  study wip do ps1         # Mark DO Problem Set 1 as in progress")
+                print(
+                    "  study wip pc 2           # Mark 2nd PC assessment as in progress"
+                )
+                print(
+                    "  study wip do ps1         # Mark DO Problem Set 1 as in progress"
+                )
                 return 1
             update_status(cmd_args[0], cmd_args[1], "in_progress")
 
@@ -527,6 +705,16 @@ def main():
 
         elif cmd == "pull":
             return cmd_pull()
+
+        # Plan commands
+        elif cmd == "plan":
+            return cmd_plan(cmd_args)
+
+        elif cmd == "plan:status":
+            return cmd_plan_status()
+
+        elif cmd == "plan:stop":
+            return cmd_plan_stop()
 
         # Help
         elif cmd in ("help", "--help", "-h"):

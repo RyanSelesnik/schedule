@@ -225,9 +225,9 @@ def _format_event_script(
         set newEvent to make new event at studyCal with properties {{summary:"{summary_escaped}", start date:date "{start_str}", end date:date "{end_str}", description:"{description_escaped}"}}'''
 
     if alert_commands:
-        script += f'''
+        script += f"""
         tell newEvent{alert_commands}
-        end tell'''
+        end tell"""
 
     return script
 
@@ -272,6 +272,39 @@ def add_events_batch(events: List[Dict]) -> int:
         return int(result) if result.isdigit() else len(events)
     except CalendarError as e:
         raise CalendarEventError("batch creation", str(e))
+
+
+def add_plan_to_calendar(blocks: List[Dict], start_time: datetime) -> int:
+    """
+    Add study plan blocks to calendar.
+
+    Args:
+        blocks: List of plan blocks with keys: course_name, course_code, duration_mins
+        start_time: When the plan starts
+
+    Returns:
+        Number of events created
+    """
+    events = []
+    current_time = start_time
+
+    for block in blocks:
+        end_time = current_time + timedelta(minutes=block["duration_mins"])
+        alias = CODE_TO_ALIAS.get(block["course_code"], "??")
+
+        events.append(
+            {
+                "summary": f"STUDY: [{alias}] {block['course_name']}",
+                "start": current_time,
+                "end": end_time,
+                "description": f"Study block: {block['course_name']}\nDuration: {block['duration_mins']} min",
+                "alerts": [-5],  # 5 min warning before end
+            }
+        )
+
+        current_time = end_time
+
+    return add_events_batch(events)
 
 
 def collect_deadline_events() -> List[Dict]:
@@ -331,13 +364,15 @@ def collect_deadline_events() -> List[Dict]:
                 if weight:
                     desc += f"\nWeight: {weight}"
 
-                events.append({
-                    "summary": summary,
-                    "start": start_date,
-                    "end": end_date,
-                    "description": desc,
-                    "alerts": [-1440, -120, -30],  # 1 day, 2 hours, 30 mins
-                })
+                events.append(
+                    {
+                        "summary": summary,
+                        "start": start_date,
+                        "end": end_date,
+                        "description": desc,
+                        "alerts": [-1440, -120, -30],  # 1 day, 2 hours, 30 mins
+                    }
+                )
 
             except ValueError:
                 # Skip invalid dates
@@ -378,12 +413,14 @@ def collect_study_sessions(
                 hour=end_time.hour, minute=end_time.minute, second=0, microsecond=0
             )
 
-            events.append({
-                "summary": session["title"],
-                "start": event_start,
-                "end": event_end,
-                "description": session.get("description", ""),
-            })
+            events.append(
+                {
+                    "summary": session["title"],
+                    "start": event_start,
+                    "end": event_end,
+                    "description": session.get("description", ""),
+                }
+            )
 
         current += timedelta(days=1)
 
