@@ -341,6 +341,39 @@ def create_plan(plan_str: str) -> Dict:
     return plan
 
 
+def log_hours_timewarrior(hours: float, course_alias: str) -> bool:
+    """
+    Log study hours to Timewarrior.
+
+    Records hours as a completed interval ending now.
+    Uses :adjust to handle overlapping intervals.
+
+    Args:
+        hours: Number of hours
+        course_alias: Course alias (pc, do, cv, ao)
+
+    Returns:
+        True if successful
+    """
+    try:
+        # Calculate explicit start and end times
+        now = datetime.now()
+        start = now - timedelta(hours=hours)
+        start_str = start.strftime("%H:%M")
+        end_str = now.strftime("%H:%M")
+
+        # timew track from <start> to <end> <tags> :adjust
+        result = subprocess.run(
+            ["timew", "track", "from", start_str, "to", end_str, "study", course_alias, ":adjust"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        return result.returncode == 0
+    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+        return False
+
+
 def stop_plan(log_partial: bool = True) -> Optional[Dict]:
     """
     Stop the current plan and optionally log partial hours.
@@ -358,18 +391,13 @@ def stop_plan(log_partial: bool = True) -> Optional[Dict]:
     logged = []
 
     if log_partial and not status.get("completed"):
-        # Import here to avoid circular dependency
-        from .tracker import log_hours
-
         # Log completed blocks
         for i, block in enumerate(status["blocks"]):
             if i < status["current_block"]:
                 # Fully completed block
                 hours = block["duration_mins"] / 60
-                log_hours(
-                    str(hours),
-                    CODE_TO_ALIAS.get(block["course_code"], block["course_code"]),
-                )
+                course_alias = CODE_TO_ALIAS.get(block["course_code"], block["course_code"])
+                log_hours_timewarrior(hours, course_alias)
                 logged.append(
                     {
                         "course": block["course_name"],
@@ -382,10 +410,8 @@ def stop_plan(log_partial: bool = True) -> Optional[Dict]:
                 elapsed_mins = block["duration_mins"] - status["time_remaining_mins"]
                 if elapsed_mins > 5:  # Only log if at least 5 mins
                     hours = elapsed_mins / 60
-                    log_hours(
-                        str(hours),
-                        CODE_TO_ALIAS.get(block["course_code"], block["course_code"]),
-                    )
+                    course_alias = CODE_TO_ALIAS.get(block["course_code"], block["course_code"])
+                    log_hours_timewarrior(hours, course_alias)
                     logged.append(
                         {
                             "course": block["course_name"],

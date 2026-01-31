@@ -13,8 +13,7 @@ from datetime import datetime, timedelta
 from functools import wraps
 from typing import List, Dict, Optional, Callable, TypeVar
 
-from .config import COURSE_NAMES, CODE_TO_ALIAS
-from .data import load_tracker, load_courses
+from .config import COURSE_NAMES, CODE_TO_ALIAS, ALIAS_TO_CODE
 from .errors import (
     CalendarError,
     CalendarConnectionError,
@@ -309,74 +308,59 @@ def add_plan_to_calendar(blocks: List[Dict], start_time: datetime) -> int:
 
 def collect_deadline_events() -> List[Dict]:
     """
-    Collect all deadline events from tracker.json.
+    Collect all deadline events from Taskwarrior.
 
     Returns:
         List of event dicts ready for batch creation
     """
-    data = load_tracker()
+    from .taskwarrior import get_tasks_with_due_dates, parse_taskwarrior_date, get_course_from_project
+
+    tasks = get_tasks_with_due_dates()
     events = []
 
-    for code, course in data["courses"].items():
-        alias = CODE_TO_ALIAS.get(code, "??")
-        course_name = COURSE_NAMES.get(code, code)
+    for task in tasks:
+        # Get due date
+        due_str = task.get("due", "")
+        if not due_str:
+            continue
 
-        for key, assessment in course["assessments"].items():
-            deadline = assessment.get("deadline", "")
-            status = assessment.get("status", "")
+        due_date = parse_taskwarrior_date(due_str)
+        if not due_date:
+            continue
 
-            # Skip completed, submitted, or no deadline
-            if status in ("completed", "submitted"):
-                continue
-            if not deadline or deadline in ("TBD", "ongoing"):
-                continue
+        # Get course from project
+        project = task.get("project", "")
+        alias = get_course_from_project(project) or "??"
+        course_code = task.get("course_code", "")
+        course_name = COURSE_NAMES.get(course_code, alias.upper())
 
-            try:
-                # Parse deadline
-                if " to " in deadline:
-                    # Date range (e.g., oral exam)
-                    start_str, end_str = deadline.split(" to ")
-                    start_date = datetime.strptime(start_str, "%Y-%m-%d")
-                    end_date = datetime.strptime(end_str, "%Y-%m-%d")
-                    end_date = end_date.replace(hour=17, minute=0)
-                    start_date = start_date.replace(hour=9, minute=0)
-                    summary = f"EXAM: [{alias}] {assessment['name']}"
-                else:
-                    dl_date = datetime.strptime(deadline, "%Y-%m-%d")
-                    # Check if it has a time component in the notes
-                    assessment_str = str(assessment)
-                    if "16:00" in assessment_str:
-                        dl_date = dl_date.replace(hour=15, minute=0)
-                        end_date = dl_date.replace(hour=16, minute=0)
-                    elif "23:00" in assessment_str:
-                        dl_date = dl_date.replace(hour=22, minute=0)
-                        end_date = dl_date.replace(hour=23, minute=0)
-                    else:
-                        dl_date = dl_date.replace(hour=15, minute=0)
-                        end_date = dl_date.replace(hour=16, minute=0)
+        description = task.get("description", "")
+        weight = task.get("weight", "")
 
-                    start_date = dl_date
-                    summary = f"DEADLINE: [{alias}] {assessment['name']}"
+        # Set event times (default to 15:00-16:00)
+        start_date = due_date.replace(hour=15, minute=0, second=0, microsecond=0)
+        end_date = due_date.replace(hour=16, minute=0, second=0, microsecond=0)
 
-                # Collect event
-                weight = assessment.get("weight", "")
-                desc = f"{course_name}\n{assessment['name']}"
-                if weight:
-                    desc += f"\nWeight: {weight}"
+        # Check for exam in description
+        if "exam" in description.lower():
+            summary = f"EXAM: [{alias}] {description}"
+        else:
+            summary = f"DEADLINE: [{alias}] {description}"
 
-                events.append(
-                    {
-                        "summary": summary,
-                        "start": start_date,
-                        "end": end_date,
-                        "description": desc,
-                        "alerts": [-1440, -120, -30],  # 1 day, 2 hours, 30 mins
-                    }
-                )
+        # Build description
+        desc = f"{course_name}\n{description}"
+        if weight:
+            desc += f"\nWeight: {weight}"
 
-            except ValueError:
-                # Skip invalid dates
-                continue
+        events.append(
+            {
+                "summary": summary,
+                "start": start_date,
+                "end": end_date,
+                "description": desc,
+                "alerts": [-1440, -120, -30],  # 1 day, 2 hours, 30 mins
+            }
+        )
 
     return events
 
