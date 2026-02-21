@@ -212,6 +212,29 @@ def complete_task(task_id: int) -> bool:
     return result.returncode == 0
 
 
+def complete_overdue_tasks() -> List[Dict]:
+    """
+    Mark all overdue pending tasks as done.
+
+    Returns:
+        List of task dicts that were completed
+    """
+    result = run_task_command(["status:pending", "due.before:now", "export"])
+    if result.returncode != 0 or not result.stdout.strip():
+        return []
+
+    tasks = json.loads(result.stdout)
+    if not tasks:
+        return []
+
+    # Get IDs and batch complete them
+    ids = [str(t["id"]) for t in tasks if t.get("id")]
+    if ids:
+        run_task_command(["rc.confirmation:no", "rc.bulk:100"] + ids + ["done"])
+
+    return tasks
+
+
 def get_course_from_project(project: str) -> Optional[str]:
     """
     Extract course alias from project name.
